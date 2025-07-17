@@ -19,6 +19,7 @@
 ;;; Code:
 
 (require 'dbus)
+(eval-when-compile (require 'cl-lib))
 
 (defgroup dock nil
   "Integrate desktop environment's taskbar/dock with Emacs."
