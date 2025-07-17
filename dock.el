@@ -50,8 +50,8 @@ This provides the expected behavior for a modern GUI application."
   :global t
   :interactive nil
   :group 'dock
-  (if dock-track-urgency-mode
-      (remove-function after-focus-change-function #'dock--remove-needs-attention-on-focus)
+  (remove-function after-focus-change-function #'dock--remove-needs-attention-on-focus)
+  (when dock-track-urgency-mode
     (add-function :after after-focus-change-function #'dock--remove-needs-attention-on-focus)))
 
 (defun dock--remove-needs-attention-on-focus (&optional _ign)
