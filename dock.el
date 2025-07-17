@@ -1,4 +1,4 @@
-;;; dock.el --- Unity Launcher API -*- lexical-binding: t; -*-
+;;; dock.el ---  Integration for desktop environment's taskbar/dock -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 Aleksei Gusev
 ;;
@@ -19,7 +19,6 @@
 ;;; Code:
 
 (require 'dbus)
-(eval-when-compile (require 'cl-lib))
 
 (defgroup dock nil
   "Integrate desktop environment's taskbar/dock with Emacs."
@@ -53,7 +52,7 @@ This provides the expected behavior for a modern GUI application."
   :group 'dock
   (if dock-track-urgency-mode
       (remove-function after-focus-change-function #'dock--remove-needs-attention-on-focus)
-    (add-function :after 'after-focus-change-function #'dock--remove-needs-attention-on-focus)))
+    (add-function :after after-focus-change-function #'dock--remove-needs-attention-on-focus)))
 
 (defun dock--remove-needs-attention-on-focus (&optional _ign)
   "Remove urgent status from the Emacs Dock icon on focus in."
