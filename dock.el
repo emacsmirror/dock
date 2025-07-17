@@ -1,4 +1,4 @@
-;;; unity-launcher-api.el --- Unity Launcher API -*- lexical-binding: t; -*-
+;;; dock.el --- Unity Launcher API -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 Aleksei Gusev
 ;;
@@ -7,27 +7,41 @@
 ;; Created: July 16, 2025
 ;; Version: 0.0.1
 ;; Keywords: lisp
-;; Homepage: https://github.com/hron/unity-launcher-api.el
+;; Homepage: https://github.com/hron/dock.el
 ;; Package-Requires: ((emacs "28.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
 ;;
-;;  Control taskbar entry of Emacs to have count badge, progress and
-;;  urgent status
+;;  Integrate desktop environment's taskbar/dock with Emacs.
 ;;
 ;;; Code:
 
 (require 'dbus)
 
-(defun unity-launcher-api-update (api-uri properties-alist)
-  "Send D-Bus signal to com.canonical.Unity.LauncherEntry.
+(defgroup dock nil
+  "Integrate desktop environment's taskbar/dock with Emacs."
+  :link '(url-link :tag "Website" "https://github.com/hron/dock.el")
+  :link '(emacs-library-link :tag "Library Source" "dock.el")
+  :group 'convenience
+  :group 'environment
+  :group 'frames
+  :prefix "dock-")
 
-API-URI: a string on the form application://$desktop_file_id.  The
-desktop file id of an application is defined to be the basename of the
-application's .desktop-file including the extension.  So taking Emacs as
-an example it would be application://emacs.desktop
+(defcustom dock-desktop-file "emacs.desktop"
+  "The desktop file id of Emacs.
+
+This is used when sending D-Bus messages to pinpoint the taskbar entry
+for updating the properties.  Usually, this is just `emacs.desktop', but
+in case Emacs is used as a dedicated window for applications like
+`org-mode', with separate desktop file, you might want to set it
+accordingly to match such entry on the taskbar."
+  :group 'dock
+  :type 'string)
+
+(defun dock-update (properties-alist)
+  "Send D-Bus signal to com.canonical.Unity.LauncherEntry.
 
 PROPERTIES-ALIST: The properties to set on the launcher icon.  Valid
 properties are:
@@ -60,11 +74,11 @@ updated, to inform the user."
    "/"
    "com.canonical.Unity.LauncherEntry"
    "Update"
-   api-uri
-   (unity-launcher-api--build-dbus-args properties-alist)))
+   (concat "application://" dock-desktop-file)
+   (dock--build-dbus-args properties-alist)))
 
-(defun unity-launcher-api--build-dbus-args (properties-alist)
-  "Convert PROPERTIES-ALIST to args for dbus-send-signal."
+(defun dock--build-dbus-args (properties-alist)
+  "Convert PROPERTIES-ALIST to args for `dbus-send-signal'."
   (seq-map
    (lambda (prop)
      (let* ((key (symbol-name (car prop)))
@@ -81,5 +95,5 @@ updated, to inform the user."
        `(:dict-entry ,key ,value)))
    properties-alist))
 
-(provide 'unity-launcher-api)
-;;; unity-launcher-api.el ends here
+(provide 'dock)
+;;; dock.el ends here
