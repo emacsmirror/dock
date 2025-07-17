@@ -1,0 +1,25 @@
+permissions:
+  contents: read
+on:
+  push:
+    branches: [master]
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+name: test
+jobs:
+  required:
+    runs-on: ubuntu-latest
+    name: test / ${{ matrix.emacs_version }}
+    strategy:
+      matrix:
+        emacs_version: ["29.4", "30.1", "snapshot"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: jcs090218/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+      - run: make test
