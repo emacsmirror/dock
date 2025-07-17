@@ -22,9 +22,20 @@
 
 (ert-deftest dock-tests-build-dbus-args ()
   (should
-   (equal (dock--build-dbus-args '((urgent . t) (count . 42)))
-          `((:dict-entry "urgent" (:variant :boolean t))
-            (:dict-entry "count" (:variant :uint32 42))))))
+   (equal (dock--build-dbus-args :urgent t)
+          `((:dict-entry "urgent" (:variant :boolean t)))))
+  (should
+   (equal (dock--build-dbus-args :count 42 :count-visible t)
+          `((:dict-entry "count-visible" (:variant :boolean t))
+            (:dict-entry "count" (:variant :uint32 42)))))
+  (should
+   (equal (dock--build-dbus-args :progress 0.42 :progress-visible t)
+          `((:dict-entry "progress-visible" (:variant :boolean t))
+            (:dict-entry "progress" (:variant :double 0.42)))))
+  (should
+   (equal (dock--build-dbus-args :updating t)
+          `((:dict-entry "updating" (:variant :boolean t))))))
+
 
 (provide 'dock-tests)
 ;;; dock-tests.el ends here

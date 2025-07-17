@@ -40,60 +40,69 @@ accordingly to match such entry on the taskbar."
   :group 'dock
   :type 'string)
 
-(defun dock-update (properties-alist)
-  "Send D-Bus signal to com.canonical.Unity.LauncherEntry.
+(defun dock-update (&rest params)
+  "Send D-Bus signal to Dock with update about Emacs.
+Various PARAMS can be set:
 
-PROPERTIES-ALIST: The properties to set on the launcher icon.  Valid
-properties are:
-
-`count` (integer) : A number to display on the launcher icon.  You must
-also set the `count-visible` property to true in order for this to show.
-
-`progress` (float) : A double precision floating point number between 0
-and 1. This will be rendered as a progress bar or similar on the
-launcher icon.  You must also set the `progress-visible` property to
-true in order for this to show.
-
-`urgent` (boolean) : Tells the launcher to get the users attention
-
-`quicklist` (type signature s) : The object path to a DbusmenuServer
-instance on the emitting process.  An empty string denotes that the
-quicklist has been unset.  This also explains why we use signature s and
-not o. The empty string is not a valid object path.
-
-`count-visible` (boolean) : Determines whether the `count` is visible
-
-`progress-visible` (boolean) : Determines whether the `progress` is
-visible
-
-`updating` (boolean) : Tells the launcher that the application is being
-updated, to inform the user."
+ :bus              The D-Bus bus, if different from `:session'.
+ :count            A number to display on the launcher icon.  You must
+                   also set the `count-visible` property to true in order
+                   for this to show.
+ :progress         A double precision floating point number between 0 and
+                   1. This will be rendered as a progress bar or similar
+                   on the launcher icon.  You must also set the
+                   `progress-visible` property to true in order for this
+                   to show.
+ :urgent           Tells the launcher to get the users attention
+ :quicklist        The object path to a DbusmenuServer instance on the
+                   emitting process.  An empty string denotes that the
+                   quicklist has been unset.  This also explains why we
+                   use signature s and not o. The empty string is not a
+                   valid object path.
+ :count-visible    Determines whether the `count` is visible
+ :progress-visible Determines whether the `progress` is visible
+ :updating         Tells the launcher that the application is being updated, to
+                   inform the user."
   (dbus-send-signal
-   :session
+   (or (plist-get params :bus) :session)
    nil
    "/"
    "com.canonical.Unity.LauncherEntry"
    "Update"
    (concat "application://" dock-desktop-file)
-   (dock--build-dbus-args properties-alist)))
+   (funcall #'dock--build-dbus-args params)))
 
-(defun dock--build-dbus-args (properties-alist)
-  "Convert PROPERTIES-ALIST to args for `dbus-send-signal'."
-  (seq-map
-   (lambda (prop)
-     (let* ((key (symbol-name (car prop)))
-            (value (cdr prop))
-            (value-type (cond
-                         ((memq value '(t nil)) :boolean)
-                         ((natnump value) :uint32)
-                         ((fixnump value) :int32)
-                         ((floatp value) :double)
-                         ((stringp value) :string)
-                         (t
-                          (signal 'wrong-type-argument (list "Value type invalid" value)))))
-            (value `(:variant ,value-type ,value)))
-       `(:dict-entry ,key ,value)))
-   properties-alist))
+(defun dock--build-dbus-args (&rest params)
+  "Convert the function arguments to arguments for `dbus-send-signal'.
+
+PARAMS are converted to corresponding arguments `dbus-send-signal'
+requires.  This is a helper for `dock-update', see its documentation for
+arguments meaning."
+  (let (args)
+
+    (when (plist-member params :urgent)
+      (let ((value (plist-get params :urgent) ))
+        (push `(:dict-entry "urgent" (:variant :boolean ,value)) args)))
+
+    (when-let (count (plist-get params :count))
+      (push `(:dict-entry "count" (:variant :uint32 ,count)) args))
+
+    (when (plist-member params :count-visible)
+      (let ((value (plist-get params :count-visible) ))
+        (push `(:dict-entry "count-visible" (:variant :boolean ,value)) args)))
+
+    (when-let (progress (plist-get params :progress))
+      (push `(:dict-entry "progress" (:variant :double ,progress)) args))
+
+    (when (plist-member params :progress-visible)
+      (let ((value (plist-get params :progress-visible)))
+        (push `(:dict-entry "progress-visible" (:variant :boolean ,value)) args)))
+
+    (when (plist-member params :updating)
+      (let ((value (plist-get params :updating)))
+        (push `(:dict-entry "updating" (:variant :boolean ,value)) args)))
+
+    args))
 
 (provide 'dock)
 ;;; dock.el ends here
