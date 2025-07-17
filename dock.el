@@ -40,43 +40,66 @@ accordingly to match such entry on the taskbar."
   :group 'dock
   :type 'string)
 
-(defun dock-update (&rest params)
+(defun dock-set-needs-attention ()
+  "Request attention for the Emacs Dock icon."
+  (dock--send-update :urgent t))
+
+(defun dock-remove-needs-attention ()
+  "Remove the 'needs attention' state from the Emacs Dock icon."
+  (dock--send-update :urgent nil))
+
+(defun dock-set-count-badge (number)
+  "Set the count badge on the Emacs Dock icon to NUMBER."
+  (dock--send-update :count number :count-visible t))
+
+(defun dock-remove-count-badge ()
+  "Remove the count badge from the Emacs Dock icon."
+  (dock--send-update :count-visible nil))
+
+(defun dock-set-progress (progress)
+  "Set the progress indicator on the Emacs Dock icon to PROGRESS.
+PROGRESS is a number between 0 and 1."
+  (dock--send-update :progress progress :progress-visible t))
+
+(defun dock-remove-progress ()
+  "Remove the progress indicator from the Emacs Dock icon."
+  (dock--send-update :progress-visible nil))
+
+(defun dock--send-update (&rest params)
   "Send D-Bus signal to Dock with update about Emacs.
 Various PARAMS can be set:
 
  :bus              The D-Bus bus, if different from `:session'.
+ :urgent           Tells the launcher to get the users attention
  :count            A number to display on the launcher icon.  You must
                    also set the `count-visible` property to true in order
                    for this to show.
+ :count-visible    Determines whether the `count` is visible
  :progress         A double precision floating point number between 0 and
                    1. This will be rendered as a progress bar or similar
                    on the launcher icon.  You must also set the
                    `progress-visible` property to true in order for this
                    to show.
- :urgent           Tells the launcher to get the users attention
- :quicklist        The object path to a DbusmenuServer instance on the
-                   emitting process.  An empty string denotes that the
-                   quicklist has been unset.  This also explains why we
-                   use signature s and not o. The empty string is not a
-                   valid object path.
- :count-visible    Determines whether the `count` is visible
  :progress-visible Determines whether the `progress` is visible
  :updating         Tells the launcher that the application is being updated, to
                    inform the user."
-  (dbus-send-signal
-   (or (plist-get params :bus) :session)
-   nil
-   "/"
-   "com.canonical.Unity.LauncherEntry"
-   "Update"
-   (concat "application://" dock-desktop-file)
-   (funcall #'dock--build-dbus-args params)))
+  (let ((bus (or (plist-get params :bus) :session))
+        (application-id (concat "application://" dock-desktop-file))
+        (dbus-arguments (apply #'dock--build-dbus-args params)))
+    (dbus-send-signal
+     bus
+     nil
+     "/"
+     "com.canonical.Unity.LauncherEntry"
+     "Update"
+     application-id
+     dbus-arguments)))
 
 (defun dock--build-dbus-args (&rest params)
   "Convert the function arguments to arguments for `dbus-send-signal'.
 
 PARAMS are converted to corresponding arguments `dbus-send-signal'
-requires.  This is a helper for `dock-update', see its documentation for
+requires.  This is a helper for `dock--send-update', see its documentation for
 arguments meaning."
   (let (args)
 
