@@ -14,20 +14,34 @@
 ;;
 ;;; Commentary:
 ;;
-;;  Control taskbar entry of Emacs to have count badge, progress and
-;;  urgent status
+;;  Integrate desktop environment's taskbar/dock with Emacs.
 ;;
 ;;; Code:
 
 (require 'dbus)
 
-(defun unity-launcher-api-update (api-uri properties-alist)
-  "Send D-Bus signal to com.canonical.Unity.LauncherEntry.
+(defgroup unity-launcher-api nil
+  "Integrate desktop environment's taskbar/dock with Emacs."
+  :link '(url-link :tag "Website" "https://github.com/hron/unity-launcher-api.el")
+  :link '(emacs-library-link :tag "Library Source" "unity-launcher-api.el")
+  :group 'convenience
+  :group 'environment
+  :group 'frames
+  :prefix "unity-launcher-api-")
 
-API-URI: a string on the form application://$desktop_file_id.  The
-desktop file id of an application is defined to be the basename of the
-application's .desktop-file including the extension.  So taking Emacs as
-an example it would be application://emacs.desktop
+(defcustom unity-launcher-api-desktop-file "emacs.desktop"
+  "The desktop file id of Emacs.
+
+This is used when sending D-Bus messages to pinpoint the taskbar entry
+for updating the properties.  Usually, this is just `emacs.desktop', but
+in case Emacs is used as a dedicated window for applications like
+`org-mode', with separate desktop file, you might want to set it
+accordingly to match such entry on the taskbar."
+  :group 'unity-launcher-api
+  :type 'string)
+
+(defun unity-launcher-api-update (properties-alist)
+  "Send D-Bus signal to com.canonical.Unity.LauncherEntry.
 
 PROPERTIES-ALIST: The properties to set on the launcher icon.  Valid
 properties are:
@@ -60,11 +74,11 @@ updated, to inform the user."
    "/"
    "com.canonical.Unity.LauncherEntry"
    "Update"
-   api-uri
+   (concat "application://" unity-launcher-api-desktop-file)
    (unity-launcher-api--build-dbus-args properties-alist)))
 
 (defun unity-launcher-api--build-dbus-args (properties-alist)
-  "Convert PROPERTIES-ALIST to args for dbus-send-signal."
+  "Convert PROPERTIES-ALIST to args for `dbus-send-signal'."
   (seq-map
    (lambda (prop)
      (let* ((key (symbol-name (car prop)))
