@@ -26,7 +26,6 @@
   :link '(emacs-library-link :tag "Library Source" "dock.el")
   :group 'convenience
   :group 'environment
-  :group 'frames
   :prefix "dock-")
 
 (defcustom dock-desktop-file "emacs.desktop"
@@ -40,9 +39,44 @@ accordingly to match such entry on the taskbar."
   :group 'dock
   :type 'string)
 
+;;;###autoload
+(define-minor-mode dock-track-urgency-mode
+  "Manage the urgent status of the Emacs Dock icon.
+When active, this mode provides two key behaviors:
+1. It automatically removes urgent status when an Emacs frame gains focus.
+2. It prevents setting urgent status if the frame already has focus when
+`dock-set-needs-attention' is called.
+This provides the expected behavior for a modern GUI application."
+  :global t
+  :interactive nil
+  :group 'dock
+  (if dock-track-urgency-mode
+      (remove-function after-focus-change-function #'dock--remove-needs-attention-on-focus)
+    (add-function :after 'after-focus-change-function #'dock--remove-needs-attention-on-focus)))
+
+(defun dock--remove-needs-attention-on-focus (&optional _ign)
+  "Remove urgent status from the Emacs Dock icon on focus in."
+  (when (dock--any-frame-focused-p)
+    (dock-remove-needs-attention)))
+
+;; This is just a copy of `blink-cursor--should-blink'
+(defun dock--any-frame-focused-p ()
+  "Determine whether we should remove urgent status from Emacs Dock icon.
+Returns whether we have any focused non-TTY frame."
+  (let ((frame-list (frame-list))
+        (any-graphical-focused nil))
+    (while frame-list
+      (let ((frame (pop frame-list)))
+        (when (and (display-graphic-p frame) (frame-focus-state frame))
+          (setf any-graphical-focused t)
+          (setf frame-list nil))))
+    any-graphical-focused))
+
 (defun dock-set-needs-attention ()
   "Request attention for the Emacs Dock icon."
-  (dock--send-update :urgent t))
+  (when (or (not dock-track-urgency-mode)
+            (not (dock--any-frame-focused-p)))
+    (dock--send-update :urgent t)))
 
 (defun dock-remove-needs-attention ()
   "Remove the 'needs attention' state from the Emacs Dock icon."
