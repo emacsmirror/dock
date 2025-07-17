@@ -28,11 +28,11 @@
   :group 'environment
   :prefix "dock-")
 
-(defcustom dock-desktop-file "emacs.desktop"
+(defcustom dock-desktop-entry "emacs"
   "The desktop file id of Emacs.
 
 This is used when sending D-Bus messages to pinpoint the taskbar entry
-for updating the properties.  Usually, this is just `emacs.desktop', but
+for updating the properties.  Usually, this is just `emacs', but
 in case Emacs is used as a dedicated window for applications like
 `org-mode', with separate desktop file, you might want to set it
 accordingly to match such entry on the taskbar."
@@ -124,7 +124,7 @@ Various PARAMS can be set:
  :updating         Tells the launcher that the application is being updated, to
                    inform the user."
   (let ((bus (or (plist-get params :bus) :session))
-        (application-id (concat "application://" dock-desktop-file))
+        (application-id (concat "application://" dock-desktop-entry ".desktop"))
         (dbus-arguments (apply #'dock--build-dbus-args params)))
     (dbus-send-signal
      bus
