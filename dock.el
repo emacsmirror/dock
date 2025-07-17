@@ -72,29 +72,35 @@ Returns whether we have any focused non-TTY frame."
           (setf frame-list nil))))
     any-graphical-focused))
 
+;;;###autoload
 (defun dock-set-needs-attention ()
   "Request attention for the Emacs Dock icon."
   (when (or (not dock-track-urgency-mode)
             (not (dock--any-frame-focused-p)))
     (dock--send-update :urgent t)))
 
+;;;###autoload
 (defun dock-remove-needs-attention ()
   "Remove the 'needs attention' state from the Emacs Dock icon."
   (dock--send-update :urgent nil))
 
+;;;###autoload
 (defun dock-set-count-badge (number)
   "Set the count badge on the Emacs Dock icon to NUMBER."
   (dock--send-update :count number :count-visible t))
 
+;;;###autoload
 (defun dock-remove-count-badge ()
   "Remove the count badge from the Emacs Dock icon."
   (dock--send-update :count-visible nil))
 
+;;;###autoload
 (defun dock-set-progress (progress)
   "Set the progress indicator on the Emacs Dock icon to PROGRESS.
 PROGRESS is a number between 0 and 1."
   (dock--send-update :progress progress :progress-visible t))
 
+;;;###autoload
 (defun dock-remove-progress ()
   "Remove the progress indicator from the Emacs Dock icon."
   (dock--send-update :progress-visible nil))
