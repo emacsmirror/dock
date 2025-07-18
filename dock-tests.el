@@ -36,6 +36,4 @@
    (equal (dock--build-dbus-args :updating t)
           `((:dict-entry "updating" (:variant :boolean t))))))
 
-
-(provide 'dock-tests)
 ;;; dock-tests.el ends here

@@ -81,7 +81,7 @@ Returns whether we have any focused non-TTY frame."
 
 ;;;###autoload
 (defun dock-remove-needs-attention ()
-  "Remove the 'needs attention' state from the Emacs Dock icon."
+  "Remove the `needs attention' state from the Emacs Dock icon."
   (dock--send-update :urgent nil))
 
 ;;;###autoload
