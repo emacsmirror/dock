@@ -21,7 +21,7 @@ Simple configuration for ~init.el~ could be something like this:
   (use-package dock
     :init
     ;; Request user's attention when compilation is finished.
-    ;; Does nothing if Emacs frame has focus.
+    ;; Do nothing if Emacs frame has focus.
     (add-hook 'compilation-finish-functions
               (lambda (_buf _msg) (dock-set-needs-attention))))
 #+end_src
