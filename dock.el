@@ -167,5 +167,7 @@ arguments meaning."
 
     args))
 
+(dock-track-urgency-mode +1)
+
 (provide 'dock)
 ;;; dock.el ends here
