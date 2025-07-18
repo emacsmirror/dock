@@ -1,0 +1,63 @@
+#+title: dock.el - Integrate Emacs with DE's Dock
+#+author: Aleksei Gusev
+#+language: en
+
+#+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/badge/GNU_Emacs-28.1%2B-%237F5AB6?logo=gnuemacs&logoColor=white"/></a>
+
+Integrate desktop environment's taskbar/dock with Emacs.
+
+#+html: <img src="https://github.com/hron/dock.el/blob/main/screenshot.png?raw=true">
+
+Any dock supporting Unity's Launcher API should be compatible. Those confirmed to work well include:
+
+  - KDE's taskbar
+  - Gnome Shell with "Dash to Dock" extension
+
+* Configuration
+
+Simple configuration for ~init.el~ could be something like this:
+
+#+begin_src emacs-lisp
+  (use-package dock
+    :init
+    ;; Request user's attention when compilation is finished.
+    ;; Does nothing if Emacs frame has focus.
+    (add-hook 'compilation-finish-functions
+              (lambda (_buf _msg) (dock-set-needs-attention))))
+#+end_src
+
+* Usage
+
+The package is intended to be used as a library and you can integrate it with any workflow you have. After requiring it, ~dock-track-urgency-mode~ is activated. It provides very minimal, but expected behavior:
+
+  1. It automatically removes urgent status when an Emacs frame gains focus.
+
+  2. It prevents setting urgent status if the frame already has focus when `dock-set-needs-attention' is called.
+
+Here is the list of functions you can use:
+
+  - ~dock-set-needs-attention~: Request attention for the Emacs Dock icon
+  - ~dock-remove-needs-attention~: Remove the 'needs attention' state
+  - ~dock-set-count-badge~: Set the count badge
+  - ~dock-remove-count-badge~: Remove the count badge
+  - ~dock-set-progress~: Set the progress indicator
+  - ~dock-remove-progress~: Remove the progress indicator
+
+Also, there is one important variable ~dock-desktop-entry~ which specifies what entry on the Dock will be targeted. It is set to "emacs", so "emacs.desktop" entry receives the commands. In case you use separate desktop files for different instances of Emacs you might want to set it accordingly. For example, you might have a desktop file for Org mode saved as "org-mode.desktop" shown below. In this case, set the variable to "org-mode".
+
+#+begin_src desktop file=org-mode.desktop
+[Desktop Entry]
+Categories=Utility
+Comment=Get Things Done with org-mode
+Exec=emacs --name org-mode --eval "(org-agenda-list)"
+Icon=org-mode-unicorn
+Name=GTD
+StartupNotify=true
+StartupWMClass=org-mode
+Terminal=false
+Type=Application
+#+end_src
+
+* Examples
+
+  - [[https://github.com/hron/org-agenda-dock/][org-agenda-dock]]: Number of TODOs on the Dock
