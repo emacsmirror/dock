@@ -8,6 +8,7 @@
 ;; Version: 0.0.1
 ;; Homepage: https://github.com/hron/dock.el
 ;; Package-Requires: ((emacs "28.1"))
+;; SPDX-License-Identifier: MIT
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
