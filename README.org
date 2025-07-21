@@ -3,6 +3,7 @@
 #+language: en
 
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/badge/GNU_Emacs-28.1%2B-%237F5AB6?logo=gnuemacs&logoColor=white"/></a>
+#+html: <a href="https://melpa.org/#/dock"><img alt="MELPA" src="https://melpa.org/packages/dock-badge.svg"/></a>
 
 Integrate desktop environment's taskbar/dock with Emacs.
 
@@ -12,6 +13,10 @@ Any dock supporting Unity's Launcher API should be compatible. Those confirmed t
 
   - KDE's taskbar
   - Gnome Shell with "Dash to Dock" extension
+
+* Installation
+
+The package is available from [[https://melpa.org/#/dock][MELPA]].
 
 * Configuration
 
